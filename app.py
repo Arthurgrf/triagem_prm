@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # Configuração da página
 st.set_page_config(page_title="Triagem de PRM", page_icon="💊", layout="centered")
@@ -44,17 +44,16 @@ if st.button("🔍 Analisar Caso", type="primary"):
         st.warning("Por favor, digite o relato do caso antes de analisar.")
     else:
         try:
-            # Configura a chave na biblioteca legada
-            genai.configure(api_key=api_key)
+            # 1. Cria o cliente com a API Key usando o SDK moderno
+            client = genai.Client(api_key=api_key)
 
-            # Instancia o modelo estável
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # 2. Chama o modelo ativo gemini-2.5-flash
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
+            )
 
-            # Prepara o prompt e envia a requisição
-            prompt_completo = f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
-            response = model.generate_content(prompt_completo)
-
-            # Exibe os resultados
+            # 3. Exibe o resultado
             st.success("Análise Concluída!")
             st.markdown("---")
             st.markdown(response.text)

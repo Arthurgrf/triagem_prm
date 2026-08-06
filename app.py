@@ -49,7 +49,7 @@ if st.button("🔍 Analisar Caso", type="primary"):
 
             # 2. Chama o modelo ativo gemini-2.5-flash
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 contents=f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
             )
 

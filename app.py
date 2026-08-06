@@ -1,0 +1,59 @@
+import streamlit as st
+import google.generativeai as genai
+
+# Configuração da página
+st.set_page_config(page_title="Triagem de PRM", page_icon="💊", layout="centered")
+
+st.title("💊 Triagem Clínica de PRM")
+st.markdown("Insira uma breve descrição do caso do paciente para identificar a possível presença de **Problemas Relacionados a Medicamentos (PRM 1 a 7)**.")
+
+# Campo para a chave da API (caso o usuário queira colocar a dele) ou via secrets
+api_key = st.sidebar.text_input("Cole sua API Key do Gemini aqui:", type="password")
+
+# Instruções para o Modelo de IA
+SYSTEM_PROMPT = """
+Você é um especialista em Farmácia Clínica e Farmacovigilância.
+Sua tarefa é analisar o relato de um caso clínico e identificar a presença de Problemas Relacionados a Medicamentos (PRM) com base no Consenso de Granada / Método Dáder.
+
+As categorias são:
+- PRM 1 (Necessidade): Não usa o medicamento de que necessita.
+- PRM 2 (Necessidade): Usa um medicamento de que não necessita.
+- PRM 3 (Efetividade): Inefetividade não quantitativa (não responde ao tratamento).
+- PRM 4 (Efetividade): Inefetividade quantitativa (subdose/posologia inferior).
+- PRM 5 (Segurança): Insegurança quantitativa (overdose/toxicidade/dose elevada).
+- PRM 6 (Segurança): Insegurança não quantitativa (Reação Adversa ao Medicamento - RAM).
+- PRM 7 (Outros/Adesão): Problema decorrente de não adesão ou erro de administração.
+
+Resposta desejada:
+1. Destaque o PRM Principal Detectado (ex: "PRM 6 - Reação Adversa ao Medicamento").
+2. Liste o(s) Medicamento(s) Envolvido(s).
+3. Justificativa Clínica Resumida (por que este PRM foi escolhido?).
+4. Sugestão de Conduta Farmacoterapêutica (de forma objetiva).
+
+Se o relato for insuficiente, solicite mais dados clínicos.
+Mantenha um tom profissional, direto e claro.
+"""
+
+# Formulário no Streamlit
+relato = st.text_area("Descrição do Caso Clínico:", height=180, placeholder="Ex: Paciente 60 anos, em uso de Enalapril 20mg/dia. Relata tosse seca há 2 semanas...")
+
+if st.button("🔍 Analisar Caso", type="primary"):
+    if not api_key:
+        st.error("Por favor, insira uma API Key do Gemini no menu lateral para continuar.")
+    elif not relato.strip():
+        st.warning("Por favor, digite o relato do caso antes de analisar.")
+    else:
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            
+            with st.spinner("Analisando farmacoterapia e cruzando dados..."):
+                prompt_completo = f"{SYSTEM_PROMPT}\n\nCASO DO PACIENTE:\n{relato}"
+                response = model.generate_content(prompt_completo)
+                
+                st.success("Análise Concluída!")
+                st.markdown("---")
+                st.markdown(response.text)
+                st.caption("⚠️ Nota: Esta ferramenta é um sistema de apoio à decisão clínica e não substitui o julgamento do profissional de saúde.")
+        except Exception as e:
+            st.error(f"Erro ao processar a requisição: {e}")

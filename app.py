@@ -44,17 +44,19 @@ if st.button("🔍 Analisar Caso", type="primary"):
         st.warning("Por favor, digite o relato do caso antes de analisar.")
     else:
             try:
-                # 1. Cria o cliente com a API Key informada na barra lateral
-                client = genai.Client(api_key=api_key)
-                
-                with st.spinner("Analisando farmacoterapia e cruzando dados..."):
-                    prompt_completo = f"{SYSTEM_PROMPT}\n\nCASO DO PACIENTE:\n{relato}"
-                    
-                    # 2. Faz a chamada usando o novo cliente e modelo atualizado
-                    response = client.models.generate_content(
-                        model = genai.GenerativeModel('gemini-1.5-flash-8b'),
-                        contents=prompt_completo,
-                    )
+                from google import genai
+
+# 1. Cria o cliente passando a sua API Key
+client = genai.Client(api_key=api_key)
+
+# 2. Chama o modelo usando a sintaxe do SDK 'google-genai'
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=descricao_do_caso,  # substitua pela sua variável do texto do paciente
+)
+
+# 3. Exibe o resultado na tela
+st.write(response.text)
                 
                 st.success("Análise Concluída!")
                 st.markdown("---")

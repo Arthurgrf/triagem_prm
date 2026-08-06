@@ -52,7 +52,7 @@ if st.button("🔍 Analisar Caso", type="primary"):
                     
                     # 2. Faz a chamada usando o novo cliente e modelo atualizado
                     response = client.models.generate_content(
-                        model="gemini-2.0-flash",
+                        model="gemini-1.5-flash",
                         contents=prompt_completo,
                     )
                 

@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # Configuração da página
 st.set_page_config(page_title="Triagem de PRM", page_icon="💊", layout="centered")
@@ -43,17 +43,22 @@ if st.button("🔍 Analisar Caso", type="primary"):
     elif not relato.strip():
         st.warning("Por favor, digite o relato do caso antes de analisar.")
     else:
-        try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            
-            with st.spinner("Analisando farmacoterapia e cruzando dados..."):
-                prompt_completo = f"{SYSTEM_PROMPT}\n\nCASO DO PACIENTE:\n{relato}"
-                response = model.generate_content(prompt_completo)
+            try:
+                # 1. Cria o cliente com a API Key informada na barra lateral
+                client = genai.Client(api_key=api_key)
+                
+                with st.spinner("Analisando farmacoterapia e cruzando dados..."):
+                    prompt_completo = f"{SYSTEM_PROMPT}\n\nCASO DO PACIENTE:\n{relato}"
+                    
+                    # 2. Faz a chamada usando o novo cliente e modelo atualizado
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=prompt_completo,
+                    )
                 
                 st.success("Análise Concluída!")
                 st.markdown("---")
                 st.markdown(response.text)
                 st.caption("⚠️ Nota: Esta ferramenta é um sistema de apoio à decisão clínica e não substitui o julgamento do profissional de saúde.")
-        except Exception as e:
-            st.error(f"Erro ao processar a requisição: {e}")
+            except Exception as e:
+                st.error(f"Erro ao processar a requisição: {e}")

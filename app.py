@@ -43,24 +43,21 @@ if st.button("🔍 Analisar Caso", type="primary"):
     elif not relato.strip():
         st.warning("Por favor, digite o relato do caso antes de analisar.")
     else:
-            try:
-                from google import genai
+        try:
+            # 1. Cria o cliente passando a sua API Key
+            client = genai.Client(api_key=api_key)
 
-# 1. Cria o cliente passando a sua API Key
-client = genai.Client(api_key=api_key)
+            # 2. Chama o modelo passando as instruções e o relato do paciente
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
+            )
 
-# 2. Chama o modelo usando a sintaxe do SDK 'google-genai'
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=descricao_do_caso,  # substitua pela sua variável do texto do paciente
-)
-
-# 3. Exibe o resultado na tela
-st.write(response.text)
-                
-                st.success("Análise Concluída!")
-                st.markdown("---")
-                st.markdown(response.text)
-                st.caption("⚠️ Nota: Esta ferramenta é um sistema de apoio à decisão clínica e não substitui o julgamento do profissional de saúde.")
-            except Exception as e:
-                st.error(f"Erro ao processar a requisição: {e}")
+            # 3. Exibe o resultado na tela
+            st.success("Análise Concluída!")
+            st.markdown("---")
+            st.markdown(response.text)
+            st.caption("⚠️ Nota: Esta ferramenta é um sistema de apoio à decisão clínica e não substitui o julgamento do profissional de saúde.")
+            
+        except Exception as e:
+            st.error(f"Erro ao processar a requisição: {e}")

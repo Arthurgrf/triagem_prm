@@ -1,5 +1,5 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 
 # Configuração da página
 st.set_page_config(page_title="Triagem de PRM", page_icon="💊", layout="centered")
@@ -7,7 +7,7 @@ st.set_page_config(page_title="Triagem de PRM", page_icon="💊", layout="center
 st.title("💊 Triagem Clínica de PRM")
 st.markdown("Insira uma breve descrição do caso do paciente para identificar a possível presença de **Problemas Relacionados a Medicamentos (PRM 1 a 7)**.")
 
-# Campo para a chave da API (caso o usuário queira colocar a dele) ou via secrets
+# Campo para a chave da API
 api_key = st.sidebar.text_input("Cole sua API Key do Gemini aqui:", type="password")
 
 # Instruções para o Modelo de IA
@@ -44,20 +44,21 @@ if st.button("🔍 Analisar Caso", type="primary"):
         st.warning("Por favor, digite o relato do caso antes de analisar.")
     else:
         try:
-            # 1. Cria o cliente passando a sua API Key
-            client = genai.Client(api_key=api_key)
+            # Configura a chave na biblioteca legada
+            genai.configure(api_key=api_key)
 
-            # 2. Chama o modelo passando as instruções e o relato do paciente
-            response = client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
-            )
+            # Instancia o modelo estável
+            model = genai.GenerativeModel('gemini-1.5-flash')
 
-            # 3. Exibe o resultado na tela
+            # Prepara o prompt e envia a requisição
+            prompt_completo = f"{SYSTEM_PROMPT}\n\nRelato do caso:\n{relato}"
+            response = model.generate_content(prompt_completo)
+
+            # Exibe os resultados
             st.success("Análise Concluída!")
             st.markdown("---")
             st.markdown(response.text)
             st.caption("⚠️ Nota: Esta ferramenta é um sistema de apoio à decisão clínica e não substitui o julgamento do profissional de saúde.")
-            
+
         except Exception as e:
             st.error(f"Erro ao processar a requisição: {e}")
